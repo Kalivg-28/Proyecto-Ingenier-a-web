@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Usuarios</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        header {
+            background-color: #333;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        section {
+            padding: 40px;
+            text-align: center;
+        }
+
+        form {
+            margin: 20px 0;
+        }
+
+        form input, form select {
+            padding: 10px;
+            margin: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        form button {
+            padding: 10px 20px;
+            background-color: #333;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        form button:hover {
+            background-color: #555;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table th, table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        table th {
+            background-color: #333;
+            color: white;
+        }
+
+        .edit-button, .delete-button {
+            padding: 5px 10px;
+            margin: 2px;
+            border: none;
+            color: white;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .edit-button {
+            background-color: #007bff;
+        }
+
+        .delete-button {
+            background-color: #dc3545;
+        }
+
+        .edit-button:hover {
+            background-color: #0056b3;
+        }
+
+        .delete-button:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Gestión de Usuarios</h1>
+    </header>
+
+    <section>
+        <h2>Agregar / Editar Usuario</h2>
+        <form id="userForm" onsubmit="return false;">
+            <input type="hidden" id="userId" value="">
+            <input type="text" id="userName" placeholder="Nombre" required>
+            <input type="email" id="userEmail" placeholder="Email" required>
+            <select id="userRole" required>
+                <option value="">Seleccione un rol</option>
+                <option value="admin">Administrador</option>
+                <option value="cliente">Cliente</option>
+                <option value="invitado">Invitado</option>
+            </select>
+            <button type="submit" id="submitButton">Agregar Usuario</button>
+        </form>
+
+        <h2>Lista de Usuarios</h2>
+        <table id="userTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Email</th>
+                    <th>Rol</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </section>
+
+    <script>
+        let users = []; 
+        let currentUserId = null; 
+
+        const userForm = document.getElementById('userForm');
+        const userTableBody = document.getElementById('userTable').getElementsByTagName('tbody')[0];
+
+        function submitForm() {
+            const name = document.getElementById('userName').value;
+            const email = document.getElementById('userEmail').value;
+            const role = document.getElementById('userRole').value;
+
+            if (currentUserId === null) {
+                // Crear nuevo usuario
+                const newUser = {
+                    id: users.length + 1,
+                    name,
+                    email,
+                    role
+                };
+                users.push(newUser);
+            } else {
+                const userIndex = users.findIndex(user => user.id === currentUserId);
+                users[userIndex].name = name;
+                users[userIndex].email = email;
+                users[userIndex].role = role;
+                currentUserId = null; // Resetear ID
+            }
+
+            renderUsers();
+            userForm.reset();
+            document.getElementById('submitButton').innerText = 'Agregar Usuario';
+        }
+
+        function renderUsers() {
+            userTableBody.innerHTML = ''; // Limpiar tabla
+            users.forEach(user => {
+                const row = userTableBody.insertRow();
+                row.insertCell(0).innerText = user.id;
+                row.insertCell(1).innerText = user.name;
+                row.insertCell(2).innerText = user.email;
+                row.insertCell(3).innerText = user.role;
+
+                const actionsCell = row.insertCell(4);
+                const editButton = document.createElement('button');
+                editButton.innerText = 'Editar';
+                editButton.className = 'edit-button';
+                editButton.onclick = () => editUser(user.id);
+                actionsCell.appendChild(editButton);
+
+                const deleteButton = document.createElement('button');
+                deleteButton.innerText = 'Eliminar';
+                deleteButton.className = 'delete-button';
+                deleteButton.onclick = () => deleteUser(user.id);
+                actionsCell.appendChild(deleteButton);
+            });
+        }
+
+        function editUser(id) {
+            const user = users.find(user => user.id === id);
+            document.getElementById('userId').value = user.id;
+            document.getElementById('userName').value = user.name;
+            document.getElementById('userEmail').value = user.email;
+            document.getElementById('userRole').value = user.role;
+
+            currentUserId = user.id; // Guardar ID del usuario que se está editando
+            document.getElementById('submitButton').innerText = 'Actualizar Usuario';
+        }
+
+        function deleteUser(id) {
+            users = users.filter(user => user.id !== id);
+            renderUsers();
+        }
+
+        userForm.onsubmit = (e) => {
+            e.preventDefault(); // Prevenir el comportamiento por defecto del formulario
+            submitForm();
+        };
+    </script>
+</body>
+</html>
